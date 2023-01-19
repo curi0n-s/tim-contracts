@@ -12,3 +12,6 @@
 [submodule "lib/ERC1155D"]
 	path = lib/ERC1155D
 	url = https://github.com/DonkeVerse/ERC1155D
+[submodule "lib/NFT-On-Chain-Metadata"]
+	path = lib/NFT-On-Chain-Metadata
+	url = https://github.com/DanielAbalde/NFT-On-Chain-Metadata
