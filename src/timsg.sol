@@ -15,13 +15,11 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
     using Strings for uint256;
     
     bool public paused = false;
-    
-    mapping(uint256 => Message) public MessagesToTokenId;
-    
+        
     string public domain = "timsg.xyz";
-    string public description = "";
+    string public description = "TinyImmutableMessage";
 
-    string public nft_name = "TemporarilyImmutableMessage";
+    string public nft_name = "TIM";
 
     string public header = "";
     string public footer = "";
@@ -31,16 +29,17 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
     uint256 public totalSupply; //unlimited
     uint256 public totalBurned;
     uint256 public totalMinted;
+
+    uint256 maxLines = 4;
+    uint256 maxLineLength = 20;
     
     struct Message {
         string name;
         string description;
-        bytes bytesValue;
+        string[] msgLines;
     }
 
-    struct MessageLines {
-        string[12] lines;
-    }
+    mapping(uint256 => Message) public TokenIdToMessage;
 
     constructor() ERC1155("") {
         header = string(abi.encodePacked(
@@ -50,7 +49,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
 
         footer = string(abi.encodePacked(
             '<rect x="3" y="245" rx="0" ry="0" width="194" height="52" style="fill:rgb(15, 12, 29);stroke-width:0;opacity:0.0;"></rect>',
-            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(88, 85, 122)" x="7" y="278">',
+            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(88, 85, 122)" x="7" y="288">',
             domain,
             '</text>'));
       description = string(abi.encodePacked(
@@ -59,39 +58,20 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
       ));
     }
 
-    function stringToBytes(string memory source) public pure returns (bytes memory) {
-        bytes memory result = new bytes(bytes(source).length);
-        for (uint i = 0; i < bytes(source).length; i++) {
-            result[i] = bytes(source)[i];
-        }
-        return result;
-    }
 
-    function convertStringToBytesUnlimited(string memory source) public pure returns (bytes memory) {
-        return bytes(source);
-    }
-
-    function convertStringToBytes32(string memory source) public pure returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(source);
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
-        }
-
-        assembly { // solhint-disable-line no-inline-assembly
-            result := mload(add(source, 32))
-        }
-    }
-
-    function mintTo(bytes memory _userTextLines, uint256 _quantity, address[] memory _to, bool asAirdrop) public payable {
+    function mintTo(string[] memory _stringLines, uint256 _quantity, address[] memory _to, bool asAirdrop) public payable {
         require(!paused, "Minting is paused.");
-
-        uint256 supply = totalSupply;
+        require(_stringLines.length == maxLines, "Need 4 lines of text.");
+        
+        for(uint256 i = 0; i < _stringLines.length; i++) {
+            require(bytes(_stringLines[i]).length <= maxLineLength, "Line too long.");
+        }
 
         Message memory newMessage = Message(
             string(abi.encodePacked(nft_name,
-            ' (#', uint256(supply + 1).toString(), ')')),
+            ' (#', uint256(totalSupply + 1).toString(), ')')),
             description,
-            _userTextLines
+            _stringLines
         );
 
         for (uint256 i = 0; i < _quantity; i++) {
@@ -99,12 +79,12 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
                 require(Math.mulDiv(msg.value, 1, _quantity) >= minPrice);
             }
 
-            MessagesToTokenId[supply + 1] = newMessage; //Add Message to mapping @tokenId
+            TokenIdToMessage[totalSupply + 1] = newMessage; //Add Message to mapping @tokenId
             if (asAirdrop) { 
-                _mint(_to[i], supply+1, 1, "");
+                _mint(_to[i], totalSupply+1, 1, "");
             } else {
-                _mint(msg.sender, supply+1, 1, "");
-                safeTransferFrom(msg.sender, _to[i], supply +1 , 1, "");
+                _mint(msg.sender, totalSupply+1, 1, "");
+                safeTransferFrom(msg.sender, _to[i], totalSupply + 1 , 1, "");
             }
             ++totalMinted;
             ++totalSupply;
@@ -128,44 +108,18 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
                 '</tspan>'));
     }
 
-    function getTextBlock0(bytes memory _bytesMessage) private pure returns (string memory) {
-        MessageLines memory currentMessageLines = abi.decode(_bytesMessage, (MessageLines));
-        return string(abi.encodePacked(currentMessageLines.lines[0]));
-    }
 
-    function getTextBlock1(uint256 _startingY, bytes memory _bytesMessage) private pure returns (string memory) {
-        MessageLines memory currentMessageLines = abi.decode(_bytesMessage, (MessageLines));
-        return string(abi.encodePacked(
-            getSVGTextLine(_startingY+20, currentMessageLines.lines[1]),
-            getSVGTextLine(_startingY+40, currentMessageLines.lines[2]),
-            getSVGTextLine(_startingY+60, currentMessageLines.lines[3]),
-            getSVGTextLine(_startingY+80, currentMessageLines.lines[4]),
-            getSVGTextLine(_startingY+100, currentMessageLines.lines[5])
-            ));
-    }
 
-    function getTextBlock2(uint256 _startingY, bytes memory _bytesMessage) private pure returns (string memory) {
-        MessageLines memory currentMessageLines = abi.decode(_bytesMessage, (MessageLines));
-        return string(abi.encodePacked(
-            getSVGTextLine(_startingY, currentMessageLines.lines[6]),
-            getSVGTextLine(_startingY+20, currentMessageLines.lines[7]),
-            getSVGTextLine(_startingY+40, currentMessageLines.lines[8]),
-            getSVGTextLine(_startingY+60, currentMessageLines.lines[9]),
-            getSVGTextLine(_startingY+80, currentMessageLines.lines[10]),
-            getSVGTextLine(_startingY+100, currentMessageLines.lines[11])
-            ));
-    }
-
-    function buildImage(uint256 _tokenId) private view returns (string memory) {
-        Message memory currentMessage = MessagesToTokenId[_tokenId];
+    function buildImage(string[] memory stringLine) private view returns (string memory) {
         return
             Base64.encode(
                 bytes(
                     abi.encodePacked(
                         header,
-                        getTextBlock0(currentMessage.bytesValue),
-                        getTextBlock1(37, currentMessage.bytesValue),
-                        getTextBlock2(157, currentMessage.bytesValue),
+                        getSVGTextLine(20, stringLine[0]),
+                        getSVGTextLine(40, stringLine[1]),
+                        getSVGTextLine(60, stringLine[2]),
+                        getSVGTextLine(80, stringLine[3]),
                         '</text>',
                         footer,
                         '</svg>'
@@ -179,7 +133,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         view
         returns (string memory)
     {
-        Message memory currentMessage = MessagesToTokenId[_tokenId];
+        Message memory currentMessage = TokenIdToMessage[_tokenId];
         return
             string(
                 abi.encodePacked(
@@ -195,7 +149,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
                                 currentMessage.description,
                                 '", "image": "',
                                 "data:image/svg+xml;base64,",
-                                buildImage(_tokenId),
+                                buildImage(currentMessage.msgLines),
                                 '", "attributes": ',
                                 "[",
                                 '{"trait_type": "TIM-ID",',
@@ -218,9 +172,10 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         override
         returns (string memory)
     {
-        // require(
-        //     _tokenId <= totalSupply
-        // );
+        require(
+            _tokenId <= totalSupply,
+            "invalid token id"
+        );
         return buildMetadata(_tokenId);
     }
 
