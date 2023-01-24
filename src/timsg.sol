@@ -11,6 +11,8 @@ import "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 import "lib/ERC1155D/contracts/ERC1155D.sol";
 import "./base64.sol";
 
+// next - threads within a registry? - initial sender decides whether to start a thread or just send one-off message with 1155
+
 contract TIM is ERC1155, ReentrancyGuard, Ownable {
     using Strings for uint256;
     
@@ -30,7 +32,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
     uint256 public totalBurned;
     uint256 public totalMinted;
 
-    uint256 maxLines = 4;
+    uint256 maxLines = 7;
     uint256 maxLineLength = 20;
     
     struct Message {
@@ -61,7 +63,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
 
     function mintTo(string[] memory _stringLines, uint256 _quantity, address[] memory _to, bool asAirdrop) public payable {
         require(!paused, "Minting is paused.");
-        require(_stringLines.length == maxLines, "Need 4 lines of text.");
+        require(_stringLines.length == maxLines, "Need 7 array items of text.");
         
         for(uint256 i = 0; i < _stringLines.length; i++) {
             require(bytes(_stringLines[i]).length <= maxLineLength, "Line too long.");
@@ -120,6 +122,9 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
                         getSVGTextLine(40, stringLine[1]),
                         getSVGTextLine(60, stringLine[2]),
                         getSVGTextLine(80, stringLine[3]),
+                        getSVGTextLine(100, stringLine[4]),
+                        getSVGTextLine(120, stringLine[5]),
+                        getSVGTextLine(140, stringLine[6]),
                         '</text>',
                         footer,
                         '</svg>'
