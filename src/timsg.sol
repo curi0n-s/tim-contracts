@@ -29,7 +29,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
     string public header = "";
     string public footer = "";
 
-    uint256 public minPrice = 0.007 ether;
+    uint256 public mintPrice = 0.007 ether;
 
     uint256 public totalSupply; //unlimited
     uint256 public totalBurned;
@@ -54,7 +54,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
 
         footer = string(abi.encodePacked(
             '<rect x="3" y="245" rx="0" ry="0" width="194" height="52" style="fill:rgb(15, 12, 29);stroke-width:0;opacity:0.0;"></rect>',
-            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(88, 85, 122)" x="7" y="288">',
+            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(88, 85, 122)" x="7" y="294">',
             domain,
             '</text>'));
       description = string(abi.encodePacked(
@@ -66,7 +66,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
 
     function mintTo(string[] memory _stringLines, address _to, bool asAirdrop) public payable {
         string[] memory thisStringLines = new string[](maxLines);
-        
+        require(msg.value >= mintPrice, "Need to send more ETH.");
         require(!paused, "Minting is paused.");
         require(_stringLines.length <= maxLines, "Need <15 array items of text.");
         
@@ -89,7 +89,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         );
 
         if (msg.sender != owner()) {
-            require(msg.value>= minPrice);
+            require(msg.value>= mintPrice);
         }
 
         TokenIdToMessage[totalSupply + 1] = newMessage; //Add Message to mapping @tokenId
@@ -130,7 +130,8 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
                 getSVGTextLine(startY + 60, stringLine[3]),
                 getSVGTextLine(startY + 80, stringLine[4]),
                 getSVGTextLine(startY + 100, stringLine[5]),
-                getSVGTextLine(startY + 120, stringLine[6])            )
+                getSVGTextLine(startY + 120, stringLine[6])            
+            )
         );
     }
 
@@ -236,8 +237,8 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         footer = abi.decode(_bFooter, (string));
     }
 
-    function setMinPrice(uint256 _newPrice) public onlyOwner {
-        minPrice = _newPrice;
+    function setmintPrice(uint256 _newPrice) public onlyOwner {
+        mintPrice = _newPrice;
     }
 
     function withdraw() public payable onlyOwner nonReentrant {
