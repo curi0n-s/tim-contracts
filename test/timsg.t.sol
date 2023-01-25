@@ -22,7 +22,8 @@ contract TimsgERC1155Tester is Test {
     bool public loggingIsOn = true;
     uint256 public numberOfAddresses = 10000;
 
-    address[] public addressList = new address[](numberOfAddresses);
+    address[] public addressList;
+    string[] public stringList;
 
     //======================================================================
 
@@ -30,7 +31,14 @@ contract TimsgERC1155Tester is Test {
 
         vm.startPrank(ownerAddress);
             TIMSG = new TIM();
-            // TIMSG.mintToTest();
+            stringList.push("hello");
+            stringList.push("testing");
+            stringList.push("12345");
+            TIMSG.mintTo(
+                stringList,
+                ownerAddress,
+                true
+            );
         vm.stopPrank();
         
 
@@ -52,7 +60,7 @@ contract TimsgERC1155Tester is Test {
     }
 
     function testMetadataCallForID1() public {
-        emit log_string(TIMSG.uri(1));
+        emit log_string(TIMSG.buildMetadata(1));
     }
 
 

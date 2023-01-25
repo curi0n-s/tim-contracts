@@ -20,45 +20,14 @@
       "additionalContracts": []
     }
   ],
-  "receipts": [
-    {
-      "transactionHash": "0x2e14baed79a3504ad2edb6e0dd5c59b18c4347254e718655fe591daa20d58431",
-      "transactionIndex": "0x1",
-      "blockHash": "0xd78208f7812d64b38157b41135cb85e77f4ed314b3d62cb36b439fb504b2b809",
-      "blockNumber": "0x7fc9bd",
-      "from": "0xcee4D01BFb1c75cc8EF255946a996B15e3A2731E",
-      "to": null,
-      "cumulativeGasUsed": "0x3b3cc6",
-      "gasUsed": "0x3aeabe",
-      "contractAddress": "0xaEbE6F7461eEFB538D54094A017EFe2c80F0c7d8",
-      "logs": [
-        {
-          "address": "0xaEbE6F7461eEFB538D54094A017EFe2c80F0c7d8",
-          "topics": [
-            "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
-            "0x0000000000000000000000000000000000000000000000000000000000000000",
-            "0x000000000000000000000000cee4d01bfb1c75cc8ef255946a996b15e3a2731e"
-          ],
-          "data": "0x",
-          "blockHash": "0xd78208f7812d64b38157b41135cb85e77f4ed314b3d62cb36b439fb504b2b809",
-          "blockNumber": "0x7fc9bd",
-          "transactionHash": "0x2e14baed79a3504ad2edb6e0dd5c59b18c4347254e718655fe591daa20d58431",
-          "transactionIndex": "0x1",
-          "logIndex": "0x0",
-          "removed": false
-        }
-      ],
-      "status": "0x1",
-      "logsBloom": "0x00000000000000000000000000000000000000000000000000800010000800000000000000000000000000000000000080000000000000000000000000000000000000000004000000000000000000000001000000000000000000000000000000000000020000000000000000000800000000000000000000000000000000400040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000020000000000000000000000000000000000000000000000000000000000000000000",
-      "type": "0x2",
-      "effectiveGasPrice": "0xb2d05e57"
-    }
-  ],
+  "receipts": [],
   "libraries": [],
-  "pending": [],
+  "pending": [
+    "0x2e14baed79a3504ad2edb6e0dd5c59b18c4347254e718655fe591daa20d58431"
+  ],
   "path": "/home/curion/crypto_dev/nft-messenger/contracts/broadcast/timsg.s.sol/5/run-latest.json",
   "returns": {},
-  "timestamp": 1674662364,
+  "timestamp": 1674662320,
   "chain": 5,
   "multi": false,
   "commit": "5801df8"
