@@ -4,11 +4,11 @@
 
 pragma solidity >=0.8.0 <0.9.0;
 
-import "lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 import "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 import "lib/ERC1155D/contracts/ERC1155D.sol";
+import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "./base64.sol";
 
 // next - threads within a registry? - initial sender decides whether to start a thread or just send one-off message with 1155
@@ -16,7 +16,7 @@ import "./base64.sol";
     // tim - just message sent with main contract
     // timthread - new contract created with thread ID as title?
     // or just new metadata for existing conctract per-thread?
-contract TIM is ERC1155, ReentrancyGuard, Ownable {
+contract TIM is ERC1155, Ownable {
     using Strings for uint256;
     
     bool public paused = false;
@@ -29,13 +29,13 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
     string public header = "";
     string public footer = "";
 
-    uint256 public mintPrice = 0.007 ether;
+    uint256 public mintPrice = 0.002 ether;
 
     uint256 public totalSupply; //unlimited
     uint256 public totalBurned;
     uint256 public totalMinted;
 
-    uint256 maxLines = 15;
+    uint256 maxLines = 14;
     uint256 maxLineLength = 20;
     
     struct Message {
@@ -48,13 +48,13 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
 
     constructor() ERC1155("") {
         header = string(abi.encodePacked(
-                        '<svg id="card" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">',
-                        '<rect x="2" y="2" rx="2" ry="2" width="196" height="296" style="fill:white;stroke:black;stroke-width:2;opacity:1"></rect>',
-                        '<text style="white-space:pre;fill:rgb(15,12,29);font:normal 16px Courier, Monospace, serif;" x="7" y="17">'));
+                        '<svg id="card" viewBox="0 0 210 300" xmlns="http://www.w3.org/2000/svg">',
+                        '<rect x="2" y="2" rx="2" ry="2" width="206" height="296" style="fill:black;stroke:green;stroke-width:2;opacity:1"></rect>',
+                        '<text style="white-space:pre;fill:rgb(32,194,14);font:normal 16px Courier, Monospace, serif;" x="7" y="17">'));
 
         footer = string(abi.encodePacked(
-            '<rect x="3" y="245" rx="0" ry="0" width="194" height="52" style="fill:rgb(15, 12, 29);stroke-width:0;opacity:0.0;"></rect>',
-            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(88, 85, 122)" x="7" y="294">',
+            '<rect x="3" y="245" rx="0" ry="0" width="194" height="52" style="fill:rgb(32,194,14);stroke-width:0;opacity:0.0;"></rect>',
+            '<text style="font:bold 10px Courier, Monospace, serif;fill:rgb(16,97,7)" x="7" y="294">',
             domain,
             '</text>'));
       description = string(abi.encodePacked(
@@ -68,7 +68,7 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         string[] memory thisStringLines = new string[](maxLines);
         require(msg.value >= mintPrice, "Need to send more ETH.");
         require(!paused, "Minting is paused.");
-        require(_stringLines.length <= maxLines, "Need <15 array items of text.");
+        require(_stringLines.length <= maxLines, "Need <=14 array items of text.");
         
         for(uint256 i = 0; i < _stringLines.length; i++) {
             require(bytes(_stringLines[i]).length <= maxLineLength, "Line too long.");
@@ -241,10 +241,16 @@ contract TIM is ERC1155, ReentrancyGuard, Ownable {
         mintPrice = _newPrice;
     }
 
-    function withdraw() public payable onlyOwner nonReentrant {
+    function withdraw() public payable onlyOwner {
         (bool success, ) = payable(msg.sender).call{
             value: address(this).balance
         }("");
         require(success);
+    }
+
+    function withdrawERC20(address _tokenContract) public onlyOwner {
+        IERC20 token = IERC20(_tokenContract);
+        uint256 balance = token.balanceOf(address(this));
+        token.transfer(msg.sender, balance);
     }
 }

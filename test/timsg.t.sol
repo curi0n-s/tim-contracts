@@ -22,19 +22,22 @@ contract TimsgERC1155Tester is Test {
     bool public loggingIsOn = true;
     uint256 public numberOfAddresses = 10000;
 
-    address[] public addressList;
+    address[] public addressList = new address[](numberOfAddresses);
     string[] public stringList;
 
     //======================================================================
 
     function setUp() public {
+        
+        generateAddressListAndDealEther();
 
         vm.startPrank(ownerAddress);
             TIMSG = new TIM();
+            TIMSG.setmintPrice(0.00 ether);
             stringList.push("hello");
             stringList.push("testing");
             stringList.push("12345");
-            TIMSG.mintTo(
+            TIMSG.mintTo{ value: 0.00 ether }(
                 stringList,
                 ownerAddress,
                 true
@@ -48,7 +51,14 @@ contract TimsgERC1155Tester is Test {
     //FUNCTIONS
     //======================================================================
 
-
+    //generate list of 100 random addresses
+    function generateAddressListAndDealEther() public {
+        for (uint256 i = 0; i < 10; i++) {
+            addressList[i] = address(uint160(uint256(keccak256(abi.encodePacked(block.timestamp, i)))));
+            vm.deal(addressList[i], 1 ether); // and YOU get an ETH
+        }
+        // emit log_array(addressList);
+    }
 
     //======================================================================
     //TESTS
